@@ -1,0 +1,14 @@
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+var socket = io();
+socket.emit('bot snapshot',{'type':'raw html'});
+
+socket.on('bot snapshot', function(data) {
+  console.log(data);
+  if(data.type=='raw html')
+  {
+    document.querySelector('body').innerHTML=data.html;
+  }
+});
+</script>

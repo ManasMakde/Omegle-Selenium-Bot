@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bot Terminal</title>
+<%-include('index_style.ejs')%>
+</head>
+
+<body>
+    <div id="terminal">
+      <div id="logger">
+        <div class="generic">Welcome to The Bot Terminal -V 1.0<br>
+        -----------------------<br><br>
+        type HELP to get started</div>
+      </div>
+      <div style='height:inherit'></div>
+    </div>
+    <div id="bottom">
+      <div id="mode">Cmd Mode:</div>
+      <textarea id="cli" class="cmd" spellcheck="false"></textarea>
+    </div>
+<%-include('index_script.ejs')%>
+</body>
+</html>

@@ -1,0 +1,108 @@
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+  var socket = io();
+  let log_tail = false;
+  let log_drag = 0
+  let cmd_list = [];
+  let cmd_index = 0;
+  socket.on('bot cmd', function (data) {
+    try {
+      document.querySelector('.waiting').remove();
+    }
+    catch { }
+    if (data.command == undefined) {
+      add_logitem(data.reply);
+      return;
+    }
+    else if (data.command == 'log tail') {
+      if (log_tail)
+        add_logitem(`${data.reply}`, 'generic', log_drag);
+      return;
+    }
+    add_logitem(`${data.command.toUpperCase()} => ${data.reply}`);
+  });
+
+  document.querySelector('#cli').focus();
+  document.querySelector('.cmd').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') {
+      cmd_list.push(e.target.value);
+
+      if (cmd_list.length > 100)
+        cmd_list.shift();
+
+      cmd_index = cmd_list.length;
+
+      let cmd = document.querySelector('#cli').value;
+      document.querySelector('#cli').value = '';
+
+      if (cmd != '') {
+        add_logitem(cmd.toUpperCase(), 'user');
+        execute_command(cmd);
+      }
+      event.preventDefault();
+      return false;
+    }
+
+  });
+
+  document.querySelector('.cmd').onkeydown = (e) => {
+
+    if (e.keyCode == '38' && cmd_index - 1 >= 0) {
+      e.target.value = cmd_list[--cmd_index];
+      e.preventDefault();
+    }
+
+    else if (e.keyCode == '40' && cmd_index + 1 < cmd_list.length) {
+      e.target.value = cmd_list[++cmd_index];
+      e.preventDefault();
+    }
+
+  }
+
+  function add_logitem(message, from = 'bot', view_scroll = 1) {
+    var temp_el = document.createElement('div');
+    temp_el.className = from;
+    temp_el.innerText = message;
+    document.querySelector('#logger').appendChild(temp_el);
+    if (view_scroll == 1)
+      document.querySelector('#logger').lastChild.scrollIntoView();
+  }
+
+  function execute_command(cmd) {
+
+    let command = cmd.trim().toLowerCase()
+
+    try {
+      if (command.startsWith('cls') || command.startsWith('clear')) {
+        var temp = document.querySelector('#logger');
+        while (temp.lastChild) temp.removeChild(temp.lastChild);
+      }
+      else if (command.startsWith('snapshot')) {
+        add_logitem('opening new window for snapshot', 'generic')
+        window.open('/snapshot', 'popUpWindow', 'height=1000,width=800,left=100,top=100,resizable=yes,scrollbars=yes,toolbar=yes,menubar=no,location=no,directories=no, status=yes')
+      }
+      else if (command.startsWith('log')) {
+        log_tail =!log_tail;
+
+        if(log_tail)
+          add_logitem(`--- Logging has begun ---`,'generic')
+        else
+          add_logitem(`--- Logging has ended ---`,'generic')
+      }
+      else if (command.startsWith('help')) {
+          add_logitem(`START : Starts the bot
+            SNAPSHOT : returns a snapshot of current bot screen
+            LOG : Toggles bot logging
+            KILL : Stops the bot
+            CLS: clears console`,'generic')
+      }
+      else
+        socket.emit('bot cmd', command);
+    }
+    catch {
+      add_logitem(`Unknown Command : ${command[0]}`, 'generic')
+    }
+  }
+
+</script>
